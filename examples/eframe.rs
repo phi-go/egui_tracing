@@ -1,3 +1,4 @@
+use egui::ViewportBuilder;
 use egui_tracing::tracing::collector::EventCollector;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -9,8 +10,11 @@ fn main() {
         .init();
 
     let options = eframe::NativeOptions {
-        resizable: true,
-        initial_window_size: Some(egui::vec2(800.0, 500.0)),
+        viewport: ViewportBuilder {
+            resizable: Some(true),
+            inner_size: Some(egui::vec2(800.0, 500.0)),
+            .. Default::default()
+        },
         ..Default::default()
     };
     eframe::run_native(
