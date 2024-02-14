@@ -92,7 +92,7 @@ impl Widget for Logs {
                 TableHeader::default()
                     .common_props(CommonProps::default().min_width(120.0))
                     .children(|ui| {
-                        ui.label("Message");
+                        ui.label("Content");
                     })
                     .show(ui);
             })
@@ -121,11 +121,33 @@ impl Widget for Logs {
                 TableCell::default()
                     .common_props(CommonProps::default().min_width(120.0))
                     .children(|ui| {
-                        let message = event.fields.get("message").unwrap();
+                        let mut short_message = String::new()
+                            + event.fields.get("message")
+                                .map_or("", |msg| msg.as_str());
+                        let mut complete_message = String::new()
+                            + event.fields.get("message")
+                                .map_or("", |msg| msg.as_str());
+                        for ff in event.fields.iter() {
+                            if ff.0 == "message" {
+                                continue;
+                            }
+                            if ff.0.starts_with("log.") {
+                                continue;
+                            }
+                            complete_message += format!("\n {}: {}", ff.0, ff.1).as_str();
+                            short_message += format!(", {}: {}", ff.0, ff.1).as_str();
+                        }
+                        complete_message += "\n\n";
+                        for ff in event.fields.iter() {
+                            if !ff.0.starts_with("log.") {
+                                continue;
+                            }
+                            complete_message += format!("\n {}: {}", ff.0, ff.1).as_str();
+                        }
 
                         ui.style_mut().visuals.override_text_color = Some(Color32::WHITE);
-                        ui.add(Label::new(message).wrap(false))
-                            .on_hover_text(message);
+                        ui.add(Label::new(short_message).wrap(false))
+                            .on_hover_text(complete_message);
                     })
                     .show(ui);
             })
